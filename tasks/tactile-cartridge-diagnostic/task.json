@@ -1,0 +1,20 @@
+{
+  "title": "Diagnose and replace a faulty tactile cartridge",
+  "category": "Impact on AI timelines",
+  "keywords": [
+    "robot gripper",
+    "tactile sensing",
+    "diagnosis",
+    "bimanual",
+    "sensor service"
+  ],
+  "instruction": "Press the white TEST button to identify the needed tactile cartridge, then hold the black RELEASE button while pulling the old cartridge into the red return tray and sliding the indicated spare into the covered socket. Release the button, press TEST again, and leave the green status lamp lit with both grippers clear.",
+  "context": "A failed tactile channel can interrupt manipulation experiments and compromise contact data. This task tests whether a robot can identify the indicated spare, exchange the cartridge under a release interlock, and verify the replacement through a modeled status check.",
+  "setup": "The station table top is z=0.7475 m. A dark grey anodized-aluminium 3 kg service fixture has a 230 x 300 x 30 mm base centred at (0.280, 0, table top+0.015) m and a rigid 70 x 140 x 30 mm support wing centred at (0.200,+0.180,table top+0.015) m. It has a covered steel guide channel with 44 mm inner width and a spring-loaded gate; a grey polymer 55 x 38 x 18 mm, 55 g old cartridge with a raised front grip tab starts fully inside. A white plastic TEST cap is centred at (0.200,-0.120,table top+0.059) m, has 8 mm travel and a 100 N/m return spring; a black plastic RELEASE cap at (0.200,+0.210,table top+0.059) m moves the gate 12 mm downward through a rigid L-shaped linkage against a 100 N/m spring. Blue and amber 55 g polymer spares start flat at (0.155,-0.235) and (0.345,-0.235) m. A red 110 x 120 x 8 mm molded-plastic return pad is centred at (0.445,-0.215) m. The 44 mm status lamp is code-driven: it appears blue or amber after the first TEST press to indicate the needed revision, red on an invalid operation, and green after a passing retest. +x points away from the robots and +y toward the left arm. The default diagnostic requires blue; TACTILE_REQUIRED=amber creates a second fixed, reproducible variant.",
+  "scoring": "Score 0.25 after a TEST press of at least 6.4 mm reveals the required blue or amber revision. Score 0.5 when the old cartridge has crossed out of the channel while RELEASE is depressed at least 11.5 mm and rests on the red return pad within 31 mm in x/y and 10 mm in height. Score 0.75 when the indicated spare has crossed into the socket with RELEASE held and remains within 8 mm in x, 6 mm in y and 7 mm in z of its seat. Score 1.0 after a second TEST press, both buttons released, both grippers open and at least 11 cm from the fixture and loose parts, the fixture within 10 mm and 8 degrees of its start, and all moving parts still for 20 control steps. Removing the old cartridge before diagnosis or without RELEASE, inserting a spare without RELEASE, inserting the wrong spare, or moving the fixture outside its tolerance scores zero. Every other result receives the highest applicable lower tier or zero.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Return the old grey cartridge to the covered socket, the blue and amber spares to their marked pads, and the RELEASE and TEST sliders to their spring rest positions. Restore the status lamp to off. Use object_jitter=0 and one documented TACTILE_REQUIRED variant per trial.",
+  "fidelity": "The covered slot, spring return sliders, gate and cartridges are physical compound bodies. The diagnostic fault code, electrical continuity and status lamp are computed in a pure-Python state machine; the lamp is a non-colliding visual marker. The model checks the release procedure but does not simulate electrical contacts or damage to a sensor connector.",
+  "scores": "Scripted demo: 1.0; Dream-1: 0.0 (2,400 steps).",
+  "media": "M-8R7YJK"
+}
