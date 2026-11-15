@@ -44,7 +44,7 @@ from dataclasses import dataclass, field, replace
 
 import numpy as np
 from yam_arena.constants import FINGER_JOINTS, FINGER_OPEN
-from yam_arena.task_file import Box, ObjectState
+from yam_arena.task_file import Box, Cylinder, ObjectState
 
 _LOG = logging.getLogger("task_parts")
 
@@ -63,7 +63,7 @@ __all__ = [
 ]
 
 # -- physics settings applied to every body and collider ---------------------------------------------------------------
-CONTACT_OFFSET = 0.0005  # m; below the 1 mm fits, so tight parts do not touch on every face at once
+CONTACT_OFFSET = 0.0001  # m; below the 0.78 mm radial PCB-hole/pin clearance
 REST_OFFSET = 0.0
 SOLVER_POSITION_ITERATIONS = 32
 SOLVER_VELOCITY_ITERATIONS = 4  # articulation only
@@ -788,7 +788,15 @@ def _hook_scene(scene) -> None:
             if isinstance(spec, Part):
                 _PARTS[spec.name] = spec
                 return _make_arena_object(spec)
-            return original_task_object(spec)
+            obj = original_task_object(spec)
+            # Arena's generic fixed-object contact margin is too large for
+            # the motherboard's submillimetre hole/pin clearance and the
+            # standoff seating check. Keep these fixture colliders explicit.
+            if (isinstance(spec, Cylinder) and not spec.free and
+                    spec.name.startswith(("standoff_", "locating_pin_"))):
+                obj.spawner_cfg.collision_props.contact_offset = CONTACT_OFFSET
+                obj.spawner_cfg.collision_props.rest_offset = REST_OFFSET
+            return obj
 
         setattr(task_object, _HOOK_MARK, True)
         scene.task_object = task_object

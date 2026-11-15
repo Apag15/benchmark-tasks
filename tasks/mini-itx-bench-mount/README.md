@@ -1,27 +1,22 @@
-# Seat a Mini-ITX motherboard on four test-bench standoffs
+# Seat a Mini-ITX motherboard in a computer assembly fixture
 
-The task seats a full-size 170 mm Mini-ITX board on four locating standoffs,
-aligns its rear ports with the test-bench opening, and releases the board.
-It measures seating for fastening; it does not include screw installation or
-electrical testing. The rigid pins do not reproduce commercial push-pin
-detents, and the protective edge clamps are coupled to the board in the model.
+Team assemblers position and mount motherboards during regular computer
+assembly. This task seats a full-size 170 mm Mini-ITX board on four locating
+standoffs in an assembly fixture, aligns its rear ports with the opening, and
+releases it. The four C/F/H/J hole positions and 3.96 mm round hole diameter
+come from [the Mini-ITX addendum, Figure 3](https://content.instructables.com/ORIG/FJD/TETT/GU59XBKK/FJDTETTGU59XBKK.pdf).
+The scene's +X edge is the rear I/O edge: C and F are the rear-side mounting
+holes, with F recessed 22.86 mm farther into the board than C.
+The 2.4 mm round fixture pins leave 0.78 mm nominal radial clearance. The
+simulator approximates the round apertures with thin collision strips and
+couples the protective edge clamps to the board. Screws, pin detents, and
+electrical testing are outside this placement trial.
 
 ## Results
 
-- Dream-1: **0.0**, seed 0, 2,500-step limit. The board stayed on its ESD mat.
-- Scripted Isaac Lab demo v10: **1.0**, seed 0. The board seated on all four
-  standoffs, remained still, and both grippers cleared it.
-
-## Alignment and level criteria
-
-Full score requires all four locating pins to pass through their matching
-mounting apertures. At each hole, the pin centre must be within 2 mm on both
-horizontal axes. The board underside must be within 2 mm of the standoff tops;
-board tilt and yaw must each be at most 3 degrees. The rear I/O housing must
-enter the test-bench opening, the board must remain still for 1 second, and
-both grippers must open and clear the board by at least 60 mm. The scorer
-applies the seating, orientation, port-opening, stillness, and release checks
-in that order, with partial credit described in `task.json`.
+- The 2026-11-15 Isaac Lab scripted demo with the corrected hole-to-I/O orientation scored **1.0** in 299 control steps. Its final maximum hole-to-pin offset was 0.763 mm, below the 0.770 mm full-score limit.
+- Dream-1 on the corrected scene scored **0.0** at the 2,500-step limit.
+- Earlier videos and scores do not validate this revision.
 
 ## Run and score
 

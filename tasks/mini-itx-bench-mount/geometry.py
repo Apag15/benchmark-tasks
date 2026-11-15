@@ -1,30 +1,61 @@
-"""Full-size Mini-ITX board and open test bench, in metres."""
+"""Mini-ITX board and computer assembly fixture, in metres."""
+import math
 from yam_arena.task_file import Box, Cylinder, TABLE_TOP
 from parts import part
 
 TOP = TABLE_TOP["station"]
 BOARD_SIDE = .170
-HOLE_OFFSET = .072
-HOLE_SIDE = .008
-PIN_RADIUS = .002
+HOLE_RADIUS = .00396 / 2
+PIN_RADIUS = .0024 / 2
 BOARD_THICKNESS = .0016
 BENCH_XY = (.350, 0.0)
 BOARD_START = (.100, 0.0, TOP + .004 + BOARD_THICKNESS / 2)
 BOARD_GOAL = (BENCH_XY[0], BENCH_XY[1], TOP + .036 + BOARD_THICKNESS / 2)
-HOLES = tuple((x, y) for x in (-HOLE_OFFSET, HOLE_OFFSET)
-              for y in (-HOLE_OFFSET, HOLE_OFFSET))
+# Mini-ITX addendum v1.1, Figure 3: C, F, H, J are a subset of ATX holes.
+# The first drawing coordinate is depth from the rear I/O edge; the second is
+# distance along that edge. Here +X faces the rear I/O opening and the board
+# origin is its centre. Coordinates below are mm from the rear-side corner:
+# C, F, H and J respectively.
+_DATUM_HOLES_MM = ((10.16, 6.35), (33.02, 163.83),
+                   (165.10, 6.35), (165.10, 163.83))
+HOLES = tuple(((85.0 - u) / 1000, (v - 85.0) / 1000)
+              for u, v in _DATUM_HOLES_MM)
 PARK = {"left": (.12, .29, TOP + .17), "right": (.12, -.29, TOP + .17)}
 
-# Split the 170 mm PCB into rectangles around four real apertures. The apertures
-# are 8 mm square here so the rigid, 4 mm locating pins have clearance.
-_edges = (-.085, -.076, -.068, .068, .076, .085)
-_pcb = []
-for i, (xa, xb) in enumerate(zip(_edges[:-1], _edges[1:])):
-    for j, (ya, yb) in enumerate(zip(_edges[:-1], _edges[1:])):
-        if i in (1, 3) and j in (1, 3):
-            continue
-        _pcb.append((((xa + xb) / 2, (ya + yb) / 2, 0),
-                     (xb - xa, yb - ya, BOARD_THICKNESS), (.04, .30, .19)))
+def _pcb_boxes():
+    """Approximate four round through-holes with thin collision strips.
+
+    The strip aperture encloses the specified circle so collision boxes do
+    not block a physically valid pin fit; scoring uses the exact circle.
+    """
+    edge = BOARD_SIDE / 2
+    bands = 16
+    y_edges = {-edge, edge}
+    for _, hy in HOLES:
+        y_edges.update(hy - HOLE_RADIUS + 2 * HOLE_RADIUS * i / bands
+                       for i in range(bands + 1))
+    boxes = []
+    y_edges = sorted(y_edges)
+    for ya, yb in zip(y_edges[:-1], y_edges[1:]):
+        cuts = []
+        for hx, hy in HOLES:
+            nearest = 0 if ya <= hy <= yb else min(abs(ya - hy), abs(yb - hy))
+            if nearest < HOLE_RADIUS:
+                half_width = math.sqrt(HOLE_RADIUS**2 - nearest**2)
+                cuts.append((hx - half_width, hx + half_width))
+        xa = -edge
+        for cut_lo, cut_hi in sorted(cuts):
+            if cut_lo > xa:
+                boxes.append((((xa + cut_lo) / 2, (ya + yb) / 2, 0),
+                              (cut_lo - xa, yb - ya, BOARD_THICKNESS), (.04, .30, .19)))
+            xa = cut_hi
+        if edge > xa:
+            boxes.append((((xa + edge) / 2, (ya + yb) / 2, 0),
+                          (edge - xa, yb - ya, BOARD_THICKNESS), (.04, .30, .19)))
+    return tuple(boxes)
+
+
+_pcb = _pcb_boxes()
 
 OBJECTS = [
     Box("esd_mat", pos=(.100, 0, TOP + .002), size=(.21, .21, .004), color=(.12, .14, .16)),
@@ -49,8 +80,7 @@ OBJECTS.append(part("motherboard", BOARD_START, mass=.44, boxes=(
     ((+.040, +.035, +.005), (.010, .060, .008), (.14, .15, .16)),
     ((+.087, 0, +.011), (.038, .060, .018), (.62, .64, .67)),  # rear I/O housing
     ((-.067, +.060, +.002), (.012, .016, .002), (.83, .69, .21)),
-    # Removable polymer edge clamps protect opposite board edges during
-    # handling and provide 26 mm wide, raised surfaces for the grippers.
+    # Protective polymer edge clamps stay clear of the mounting holes.
     ((-.060, +.079, +.010), (.016, .026, .018), (.20, .22, .25)),
     ((+.050, -.079, +.010), (.016, .026, .018), (.20, .22, .25)),
 ), friction=.9))

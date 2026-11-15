@@ -1,4 +1,4 @@
-"""Seat a Mini-ITX motherboard on an open hardware test bench."""
+"""Seat a Mini-ITX motherboard in a computer assembly fixture."""
 from pathlib import Path
 import os
 import sys
@@ -60,6 +60,7 @@ def score(objects):
     if os.environ.get("ROBOCURVE_DEBUG_SCORE"):
         print("BOARD_FINAL_MEASURES", scoring.measures(objects["motherboard"]),
               "board_pos", tuple(float(x) for x in objects["motherboard"].pos),
+              "board_quat", tuple(float(x) for x in objects["motherboard"].quat_xyzw),
               "hands_clear", _hands_clear, flush=True)
     return scoring.grade(objects, _hands_clear)
 
